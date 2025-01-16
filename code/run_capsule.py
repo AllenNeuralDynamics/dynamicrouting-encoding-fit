@@ -39,11 +39,9 @@ logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR) # suppress 
 # utility functions ------------------------------------------------ #
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--session_id', type=str, default=None)
     parser.add_argument('--logging_level', type=str, default='INFO')
     parser.add_argument('--test', type=int, default=0)
     parser.add_argument('--update_packages_from_source', type=int, default=1)
-    parser.add_argument('--session_table_query', type=str, default="is_ephys & is_task & is_annotated & is_production & issues=='[]'")
     parser.add_argument('--override_params_json', type=str, default="{}")
     for field in dataclasses.fields(Params):
         if field.name in [getattr(action, 'dest') for action in parser._actions]:
@@ -72,36 +70,13 @@ def parse_args() -> argparse.Namespace:
 
 # processing function ---------------------------------------------- #
 # modify the body of this function, but keep the same signature
-def process_session(session_id: str, params: "Params", test: int = 0) -> None:
+def process(design_matrix: npt.NDArray[np.floating], spike_times: npt.NDArray[np.floating], params: dict, test: int = 0) -> None:
     """Process a single session with parameters defined in `params` and save results + params to
     /results.
     
     A test mode should be implemented to allow for quick testing of the capsule (required every time
     a change is made if the capsule is in a pipeline) 
     """
-    # Get nwb file
-    # Currently this can fail for two reasons: 
-    # - the file is missing from the datacube, or we have the path to the datacube wrong (raises a FileNotFoundError)
-    # - the file is corrupted due to a bad write (raises a RecursionError)
-    # Choose how to handle these as appropriate for your capsule
-    try:
-        nwb = utils.get_nwb(session_id, raise_on_missing=True, raise_on_bad_file=True) 
-    except (FileNotFoundError, RecursionError) as exc:
-        logger.info(f"Skipping {session_id}: {exc!r}")
-        return
-    
-    # Get components from the nwb file:
-    trials_df = nwb.trials[:]
-    units_df = nwb.units[:]
-    
-    # Process data here, with test mode implemented to break out of the loop early:
-    logger.info(f"Processing {session_id} with {params.to_json()}")
-    results = {}
-    for structure, structure_df in units_df.groupby('structure'):
-        results[structure] = len(structure_df)
-        if test:
-            logger.info("TEST | Exiting after first structure")
-            break
 
     # Save data to files in /results
     # If the same name is used across parallel runs of this capsule in a pipeline, a name clash will
@@ -124,7 +99,6 @@ def process_session(session_id: str, params: "Params", test: int = 0) -> None:
 # this is an example from Sam's processing code, replace with your own parameters as needed:
 @dataclasses.dataclass
 class Params:
-    session_id: str
     
     nUnitSamples: int = 20
     unitSampleSize: int = 20
@@ -184,29 +158,22 @@ def main():
                 logger.info(f"Overriding value of {k!r} from command line arg with value specified in `override_params_json`")
             params[k] = v
             
-    # if session_id is passed as a command line argument, we will only process that session,
-    # otherwise we process all session IDs that match filtering criteria:    
-    session_table = pd.read_parquet(utils.get_datacube_dir() / 'session_table.parquet')
-    session_table['issues']=session_table['issues'].astype(str)
-    session_ids: list[str] = session_table.query(args.session_table_query)['session_id'].values.tolist()
-    logger.debug(f"Found {len(session_ids)} session_ids available for use after filtering")
-    
-    if args.session_id is not None:
-        if args.session_id not in session_ids:
-            logger.warning(f"{args.session_id!r} not in filtered session_ids: exiting")
-            exit()
-        logger.info(f"Using single session_id {args.session_id} provided via command line argument")
-        session_ids = [args.session_id]
-    elif utils.is_pipeline(): 
-        # only one nwb will be available 
-        session_ids = set(session_ids) & set(p.stem for p in utils.get_nwb_paths())
+    # if test mode is on, we process a .npz file attached to the capsule,
+    # otherwise, process all .npz files discovered in /data
+    if args.test:
+        npz_paths = (next(pathlib.Path('/code').rglob('*.npz')), )
     else:
-        logger.info(f"Using list of {len(session_ids)} session_ids after filtering")
+        npz_paths = tuple(utils.get_data_root().rglob('*.npz'))
+    logger.debug(f"Found {len(npz_paths)} .npz paths available for use")
     
-    # run processing function for each session, with test mode implemented:
-    for session_id in session_ids:
+    
+    # run processing function for each .npz file, with test mode implemented:
+    for npz_path in npz_paths:
+        npz = np.load(npz_path)
+        session_id = npz['params']['session_id']
         try:
-            process_session(session_id, params=Params(session_id=session_id, **params), test=args.test, skip_existing=args.skip_existing)
+            process(design_matrix=npz['design_matrix'], spike_times=npz['spike_times'], params=npz['params'], test=args.test)\
+            # may need two sets of params (one for model params, one for configuring how model is run, e.g. parallelized)
         except Exception as e:
             logger.exception(f'{session_id} | Failed:')
         else:
