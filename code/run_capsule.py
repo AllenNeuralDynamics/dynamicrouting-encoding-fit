@@ -160,7 +160,7 @@ class Params:
 def main():
     t0 = time.time()
     
-    utils.setup_logging()
+    #utils.setup_logging()
 
     # get arguments passed from command line (or "AppBuilder" interface):
     args = parse_args()
