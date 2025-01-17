@@ -119,7 +119,7 @@ def setup_logging(
     handlers.append(console_handler)
     
     if is_pipeline() and not filepath:
-        filepath = f"/results/logs/{AWS_BATCH_JOB_ID}.log"
+        filepath = f"/results/logs/{AWS_BATCH_JOB_ID}_{int(time.time())}.log"
         # note: filename must be unique if we want to collect logs at end of pipeline
         
     if filepath:
