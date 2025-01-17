@@ -70,18 +70,24 @@ def parse_args() -> argparse.Namespace:
 
 # processing function ---------------------------------------------- #
 # modify the body of this function, but keep the same signature
-def process(path: str | pathlib.Path, test: int = 0) -> None:
+def process(inputs_path: str | pathlib.Path, full_model_outputs_path: str | pathlib.Path | None = None, test: int = 0) -> None:
     """Process a single session with parameters defined in `params` and save results + params to
     /results.
     
     A test mode should be implemented to allow for quick testing of the capsule (required every time
     a change is made if the capsule is in a pipeline) 
     """
-    path = pathlib.Path(path)
-    logger.info(f"Processing {path.name}")
+    inputs_path = pathlib.Path(inputs_path)
+    logger.info(f"Processing {inputs_path.name}")
     
-    npz = np.load(path, allow_pickle=True)
+    npz = np.load(inputs_path, allow_pickle=True)
     params = npz['params'].item()
+
+    if full_model_outputs_path:
+        logger.info(f"Re-using regularization parameters from {full_model_outputs_path.name}")
+        # incorporate params
+
+    # run GLM...
 
     # Save data to files in /results
     # If the same name is used across parallel runs of this capsule in a pipeline, a name clash will
@@ -93,7 +99,7 @@ def process(path: str | pathlib.Path, test: int = 0) -> None:
         'fit': np.full((5,5), 1.2),
         'params': params,
     }
-    output_path = f"/results/{params['session_id']}_{params['model_name']}.npz"
+    output_path = f"/results/{params['session_id']}_{params['model_name']}_outputs.npz"
     logger.info(f"Writing results to {output_path}")
     np.savez(output_path, **results)
 
@@ -180,9 +186,10 @@ def main():
     
     # run processing function for each .npz file, with test mode implemented:
     for npz_path in npz_paths:
+        full_model_outputs_path = next(utils.get_data_root().rglob('*_full_model_outputs.npz'), None)  
         try:
             # may need two sets of params (one for model params, one for configuring how model is run, e.g. parallelized)
-            process(path=npz_path, test=args.test)
+            process(inputs_path=npz_path, full_model_outputs_path=full_model_outputs_path, test=args.test)
         except Exception as e:
             logger.exception(f'{npz_path.stem} | Failed:')
         else:
