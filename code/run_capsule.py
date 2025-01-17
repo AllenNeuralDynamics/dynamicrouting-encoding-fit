@@ -99,7 +99,8 @@ def process(inputs_path: str | pathlib.Path, full_model_outputs_path: str | path
         'fit': np.full((5,5), 1.2),
         'params': params,
     }
-    output_path = f"/results/{params['session_id']}_{params['model_name']}_outputs.npz"
+    output_path = f"/results/outputs/{params['session_id']}_{params['model_name']}_outputs.npz"
+    # /outputs/ avoids name clash due to multiple logs dirs
     logger.info(f"Writing results to {output_path}")
     np.savez(output_path, **results)
 
