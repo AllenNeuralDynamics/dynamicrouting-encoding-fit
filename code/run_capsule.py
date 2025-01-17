@@ -205,7 +205,7 @@ def main():
         if args.test:
             logger.info("Test mode: exiting after first session")
             break
-    utils.ensure_nonempty_results_dir()
+    utils.ensure_nonempty_results_dirs('/results/outputs')
     logger.info(f"Time elapsed: {time.time() - t0:.2f} s")
 
 if __name__ == "__main__":
