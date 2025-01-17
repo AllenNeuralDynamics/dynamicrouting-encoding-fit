@@ -3,23 +3,6 @@
 	"named_parameters": true,
 	"parameters": [
 		{
-			"id": "U7T2KRR0pLvyecUz",
-			"name": "session_id",
-			"param_name": "session_id",
-			"description": "Provide a single session ID \u003csubjectID\u003e_\u003cyyyy-mm-dd\u003e (default empty: run for all sessions in datacube)",
-			"type": "text",
-			"value_type": "string"
-		},
-		{
-			"id": "CLnGBLMVID8fEr6b",
-			"name": "session_table_query",
-			"param_name": "session_table_query",
-			"description": "Query text to pass to df.query(), for filtering session_table (sessions excluded by filter are not processed)",
-			"type": "text",
-			"value_type": "string",
-			"default_value": "is_ephys \u0026 is_task \u0026 is_annotated \u0026 is_production \u0026 issues=='[]'"
-		},
-		{
 			"id": "HzuW2S8dqcVV1ML7",
 			"name": "logging_level",
 			"param_name": "logging_level",
