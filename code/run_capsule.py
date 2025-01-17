@@ -81,7 +81,7 @@ def process(path: str | pathlib.Path, test: int = 0) -> None:
     logger.info(f"Processing {path.name}")
     
     npz = np.load(path, allow_pickle=True)
-    model_name = npz['params']['model_name']
+    params = npz['params'][0] # get dict from first entry in array
 
     # Save data to files in /results
     # If the same name is used across parallel runs of this capsule in a pipeline, a name clash will
@@ -91,10 +91,10 @@ def process(path: str | pathlib.Path, test: int = 0) -> None:
         'x': np.full((5,5), 1.2), 
         'y': np.full((5,5), 1.2), 
         'fit': np.full((5,5), 1.2),
-        'params': npz['params'],
+        'params': params,
     }
-    logger.info(f"Writing results for {npz['params']['session_id']}")
-    np.savez(f"/results/{npz['params']['session_id']}_{npz['params']['model_name']}.npz", **results)
+    logger.info(f"Writing results for {params['session_id']}")
+    np.savez(f"/results/{params['session_id']}_{params['model_name']}.npz", **results)
 
 # define run params here ------------------------------------------- #
 
@@ -171,7 +171,7 @@ def main():
     # if test mode is on, we process a .npz file attached to the capsule,
     # otherwise, process all .npz files discovered in /data
     if args.test:
-        npz_paths = (next(pathlib.Path('/code').rglob('*.npz')), )
+        npz_paths = tuple(pathlib.Path('/code').rglob('*.npz'))
     else:
         npz_paths = tuple(utils.get_data_root().rglob('*.npz'))
     logger.debug(f"Found {len(npz_paths)} .npz paths available for use")
@@ -183,9 +183,9 @@ def main():
             # may need two sets of params (one for model params, one for configuring how model is run, e.g. parallelized)
             process(path=npz_path, test=args.test)
         except Exception as e:
-            logger.exception(f'{npz_path.name} | Failed:')
+            logger.exception(f'{npz_path.stem} | Failed:')
         else:
-            logger.info(f'{npz_path.name} | Completed')
+            logger.info(f'{npz_path.stem} | Completed')
 
         if args.test:
             logger.info("Test mode: exiting after first session")
