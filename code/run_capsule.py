@@ -81,7 +81,7 @@ def process(path: str | pathlib.Path, test: int = 0) -> None:
     logger.info(f"Processing {path.name}")
     
     npz = np.load(path, allow_pickle=True)
-    params = npz['params'][0] # get dict from first entry in array
+    params = npz['params'].item()
 
     # Save data to files in /results
     # If the same name is used across parallel runs of this capsule in a pipeline, a name clash will
