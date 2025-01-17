@@ -70,21 +70,31 @@ def parse_args() -> argparse.Namespace:
 
 # processing function ---------------------------------------------- #
 # modify the body of this function, but keep the same signature
-def process(design_matrix: npt.NDArray[np.floating], spike_times: npt.NDArray[np.floating], params: dict, test: int = 0) -> None:
+def process(path: str | pathlib.Path, test: int = 0) -> None:
     """Process a single session with parameters defined in `params` and save results + params to
     /results.
     
     A test mode should be implemented to allow for quick testing of the capsule (required every time
     a change is made if the capsule is in a pipeline) 
     """
+    path = pathlib.Path(path)
+    logger.info(f"Processing {path.name}")
+    
+    npz = np.load(path, allow_pickle=True)
+    model_name = npz['params']['model_name']
 
     # Save data to files in /results
     # If the same name is used across parallel runs of this capsule in a pipeline, a name clash will
     # occur and the pipeline will fail, so use session_id as filename prefix:
     #   /results/<sessionId>.suffix
-    logger.info(f"Writing results for {session_id}")
-    np.savez(f'/results/{session_id}.npz', **results)
-    params.write_json(f'/results/{session_id}.json')
+    results = {
+        'x': np.full((5,5), 1.2), 
+        'y': np.full((5,5), 1.2), 
+        'fit': np.full((5,5), 1.2),
+        **npz,
+    }
+    logger.info(f"Writing results for {npz['params']['session_id']}")
+    np.savez(f"/results/{npz['params']['session_id']}_{npz['params']['model_name']}.npz", **results)
 
 # define run params here ------------------------------------------- #
 
@@ -169,15 +179,13 @@ def main():
     
     # run processing function for each .npz file, with test mode implemented:
     for npz_path in npz_paths:
-        npz = np.load(npz_path)
-        session_id = npz['params']['session_id']
         try:
-            process(design_matrix=npz['design_matrix'], spike_times=npz['spike_times'], params=npz['params'], test=args.test)\
             # may need two sets of params (one for model params, one for configuring how model is run, e.g. parallelized)
+            process(path=npz_path, test=args.test)
         except Exception as e:
-            logger.exception(f'{session_id} | Failed:')
+            logger.exception(f'{npz_path.name} | Failed:')
         else:
-            logger.info(f'{session_id} | Completed')
+            logger.info(f'{npz_path.name} | Completed')
 
         if args.test:
             logger.info("Test mode: exiting after first session")
