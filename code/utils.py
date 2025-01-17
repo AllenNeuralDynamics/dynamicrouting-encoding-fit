@@ -464,11 +464,13 @@ def get_data_root(as_str: bool = False) -> pathlib.Path:
 def get_nwb_paths() -> tuple[pathlib.Path, ...]:
     return tuple(get_data_root().rglob('*.nwb'))
 
-def ensure_nonempty_results_dirs(dirs: Iterable[str] = ('/results', )) -> None:
+def ensure_nonempty_results_dirs(dirs: str | Iterable[str] = '/results') -> None:
     """A pipeline run can crash if a results folder is expected and not found or is empty 
     - ensure that a non-empty folder exists by creating a unique file"""
     if not is_pipeline():
         return
+    if isinstance(dirs, str):
+        dirs = (dirs, )
     for d in dirs:
         results_dir = pathlib.Path(d)
         results_dir.mkdir(exist_ok=True)
