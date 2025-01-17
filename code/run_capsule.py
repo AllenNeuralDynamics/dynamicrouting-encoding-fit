@@ -59,7 +59,7 @@ def parse_args() -> argparse.Namespace:
             kwargs['type'] = str
         if isinstance(kwargs['type'], (types.UnionType, typing._UnionGenericAlias)):
             kwargs['type'] = typing.get_args(kwargs['type'])[0]
-            logger.info(f"setting argparse type for union type {field.name!r} ({field.type}) as first component {kwargs['type']!r}")
+            logger.debug(f"setting argparse type for union type {field.name!r} ({field.type}) as first component {kwargs['type']!r}")
         parser.add_argument(f'--{field.name}', **kwargs)
     args = parser.parse_args()
     list_args = [k for k,v in vars(args).items() if type(v) in (list, tuple)]
