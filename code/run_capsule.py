@@ -93,8 +93,9 @@ def process(path: str | pathlib.Path, test: int = 0) -> None:
         'fit': np.full((5,5), 1.2),
         'params': params,
     }
-    logger.info(f"Writing results for {params['session_id']}")
-    np.savez(f"/results/{params['session_id']}_{params['model_name']}.npz", **results)
+    output_path = f"/results/{params['session_id']}_{params['model_name']}.npz"
+    logger.info(f"Writing results to {output_path}")
+    np.savez(output_path, **results)
 
 # define run params here ------------------------------------------- #
 
