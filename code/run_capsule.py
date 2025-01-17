@@ -175,18 +175,23 @@ def main():
                 logger.info(f"Overriding value of {k!r} from command line arg with value specified in `override_params_json`")
             params[k] = v
             
-    # if test mode is on, we process a .npz file attached to the capsule,
+    # if test mode is on, we process .npz files attached to the capsule in /code,
     # otherwise, process all .npz files discovered in /data
     if args.test:
-        npz_paths = tuple(pathlib.Path('/code').rglob('*.npz'))
-    else:
-        npz_paths = tuple(utils.get_data_root().rglob('*.npz'))
-    logger.debug(f"Found {len(npz_paths)} .npz paths available for use")
+        data_path = pathlib.Path('/code')
+    else: 
+        data_path = utils.get_data_root()
+    npz_paths = tuple(data_path.rglob('*_inputs.npz'))
+    logger.info(f"Found {len(npz_paths)} .npz paths available for use")
     
+    full_model_outputs_paths = tuple(data_path.rglob('*_full_model_outputs.npz'))
+    logger.info(f"Found {len(full_model_outputs_paths)} full model outputs .npz paths available for use")
+    if len(full_model_outputs_paths) > 1:
+        raise NotImplementedError(f"Multiple files found for outputs of full model: implement matching of output files to input files")
+    full_model_outputs_path = full_model_outputs_paths[0] if full_model_outputs_paths else None
     
     # run processing function for each .npz file, with test mode implemented:
     for npz_path in npz_paths:
-        full_model_outputs_path = next(utils.get_data_root().rglob('*_full_model_outputs.npz'), None)  
         try:
             # may need two sets of params (one for model params, one for configuring how model is run, e.g. parallelized)
             process(inputs_path=npz_path, full_model_outputs_path=full_model_outputs_path, test=args.test)
