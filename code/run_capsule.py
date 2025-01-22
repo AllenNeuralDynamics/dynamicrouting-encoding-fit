@@ -189,15 +189,19 @@ def main():
         data_path = utils.get_data_root()
     npz_paths = tuple(data_path.rglob('*_inputs.npz'))
     logger.info(f"Found {len(npz_paths)} inputs .npz file(s)")
-    
+
     full_model_outputs_paths = tuple(data_path.rglob('*_full_model_outputs.npz'))
     logger.info(f"Found {len(full_model_outputs_paths)} full model outputs .npz file(s)")
-    if len(full_model_outputs_paths) > 1:
-        raise NotImplementedError(f"Multiple files found for outputs of full model: implement matching of output files to input files")
-    full_model_outputs_path = full_model_outputs_paths[0] if full_model_outputs_paths else None
-    
+
     # run processing function for each .npz file, with test mode implemented:
     for npz_path in npz_paths:
+        session_id = '_'.join(npz_path.stem.split('_')[:2])
+        matching_outputs = tuple(
+            f for f in full_model_outputs_paths if f.stem.startswith(session_id)
+        )
+        if len(matching_outputs) > 1:
+            raise AssertionError(f"Multiple files found for outputs of full model for {session_id}: something has likely gone wrong in data connections in pipeline")
+        full_model_outputs_path = matching_outputs[0] if matching_outputs else None
         try:
             # may need two sets of params (one for model params, one for configuring how model is run, e.g. parallelized)
             process(inputs_path=npz_path, full_model_outputs_path=full_model_outputs_path, test=args.test)
