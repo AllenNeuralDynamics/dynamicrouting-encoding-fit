@@ -447,7 +447,7 @@ def get_datacube_dir() -> pathlib.Path:
                 break
         else:
             raise FileNotFoundError(f"Cannot determine datacube dir: {list(get_data_root().iterdir())=}")
-    logger.info(f"Using files in {path}")
+    logger.debug(f"Using files in {path}")
     return path
 
 @functools.cache
@@ -455,7 +455,7 @@ def get_data_root(as_str: bool = False) -> pathlib.Path:
     expected_paths = ('/data', '/tmp/data', )
     for p in expected_paths:
         if (data_root := pathlib.Path(p)).exists():
-            logger.info(f"Using {data_root=}")
+            logger.debug(f"Using {data_root=}")
         return data_root.as_posix() if as_str else data_root
     else:
         raise FileNotFoundError(f"data dir not present at any of {expected_paths=}")
