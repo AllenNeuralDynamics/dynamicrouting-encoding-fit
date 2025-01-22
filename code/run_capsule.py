@@ -188,10 +188,10 @@ def main():
     else: 
         data_path = utils.get_data_root()
     npz_paths = tuple(data_path.rglob('*_inputs.npz'))
-    logger.info(f"Found {len(npz_paths)} .npz paths available for use")
+    logger.info(f"Found {len(npz_paths)} inputs .npz file(s)")
     
     full_model_outputs_paths = tuple(data_path.rglob('*_full_model_outputs.npz'))
-    logger.info(f"Found {len(full_model_outputs_paths)} full model outputs .npz paths available for use")
+    logger.info(f"Found {len(full_model_outputs_paths)} full model outputs .npz file(s)")
     if len(full_model_outputs_paths) > 1:
         raise NotImplementedError(f"Multiple files found for outputs of full model: implement matching of output files to input files")
     full_model_outputs_path = full_model_outputs_paths[0] if full_model_outputs_paths else None
