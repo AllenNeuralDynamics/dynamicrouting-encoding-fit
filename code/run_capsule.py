@@ -24,6 +24,8 @@ import zarr
 
 import utils
 
+# shs
+
 # logging configuration -------------------------------------------- #
 # use `logger.info(msg)` instead of `print(msg)` so we get timestamps and origin of log messages
 logger = logging.getLogger(
@@ -104,6 +106,8 @@ def process(inputs_path: str | pathlib.Path, full_model_outputs_path: str | path
     output_path.parent.mkdir(parents=True, exist_ok=True)
     logger.info(f"Writing results to {output_path}")
     np.savez(output_path, **results)
+    if not output_path.exists():
+        raise AssertionError(f"{output_path} should exist after writing")
 
 # define run params here ------------------------------------------- #
 
