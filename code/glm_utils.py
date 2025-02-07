@@ -89,9 +89,13 @@ class RunParams:
 
     def validate_params(self):
         """Validation logic to ensure parameters are consistent."""
-        if run_params["method"] not in ['ridge_regression', 'lasso_regression', 'elastic_net', 'reduced_rank_regression']:
+        if self.run_params["method"] not in ['ridge_regression', 'lasso_regression', 'elastic_net', 'reduced_rank_regression']:
             raise ValueError("Invalid method: must be one of ['ridge_regression', 'lasso_regression', 'elastic_net_regression', 'reduced_rank_regression']")
 
+        if self.run_params["rank_fixed"] or self.run_params["L1_ratio_fixed"] or self.run_params["L1_fixed_lambda"] or self.run_params["L2_fixed_lambda"]:
+            if not self.run_params["use_fixed_penalty"]:
+                logger.warning('Fixed penalty parameter passed, setting fixed penalty to True')
+                self.run_params["use_fixed_penalty"] = True
         
 
 def nested_train_and_test(design_mat, spike_counts, param_grid, param2_grid = None, folds_outer=10, folds_inner=6, method = 'ridge_regression'):
