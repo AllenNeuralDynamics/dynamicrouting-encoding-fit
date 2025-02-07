@@ -54,7 +54,7 @@ def parse_args() -> argparse.Namespace:
         logger.debug(f"adding argparse argument {field}")
         kwargs = {}
         if isinstance(field.type, str):
-            kwargs = {'type': eval(field.type)}
+            kwargs = {'type': eval(field.type)} 
         else:
             kwargs = {'type': field.type}
         if kwargs['type'] in (list, tuple):
@@ -74,7 +74,7 @@ def parse_args() -> argparse.Namespace:
 
 # processing function ---------------------------------------------- #
 # modify the body of this function, but keep the same signature
-def process(inputs_path: str | pathlib.Path, full_model_outputs_path: str | pathlib.Path | None = None, test: int = 0) -> None:
+def process(inputs_path: str | pathlib.Path, fullmodel_outputs_path: str | pathlib.Path | None = None, test: int = 0) -> None:
     """Process a single session with parameters defined in `params` and save results + params to
     /results.
     
@@ -84,11 +84,14 @@ def process(inputs_path: str | pathlib.Path, full_model_outputs_path: str | path
     inputs_path = pathlib.Path(inputs_path)
     logger.info(f"Processing {inputs_path.name}")
     
-    npz = np.load(inputs_path, allow_pickle=True)
-    params = npz['params'].item()
+    input_dict = np.load(inputs_path, allow_pickle=True)
+    run_params = input_dict['run_params'].item()
+    fit = input_dict['fit'].item()
+    design_matrix = input_dict['design_matrix'].item()
 
-    if full_model_outputs_path:
-        logger.info(f"Re-using regularization parameters from {full_model_outputs_path.name}")
+    if fullmodel_outputs_path:
+        logger.info(f"Re-using regularization parameters from {fullmodel_outputs_path.name}")
+        fullmodel
         # incorporate params
 
     # run GLM...
@@ -192,21 +195,21 @@ def main():
     npz_paths = tuple(data_path.rglob('*_inputs.npz'))
     logger.info(f"Found {len(npz_paths)} inputs .npz file(s)")
 
-    full_model_outputs_paths = tuple(data_path.rglob('*_full_model_outputs.npz'))
-    logger.info(f"Found {len(full_model_outputs_paths)} full model outputs .npz file(s)")
+    fullmodel_outputs_paths = tuple(data_path.rglob('*_fullmodel_outputs.npz'))
+    logger.info(f"Found {len(fullmodel_outputs_paths)} full model outputs .npz file(s)")
 
     # run processing function for each .npz file, with test mode implemented:
     for npz_path in npz_paths:
         session_id = '_'.join(npz_path.stem.split('_')[:2])
         matching_outputs = tuple(
-            f for f in full_model_outputs_paths if f.stem.startswith(session_id)
+            f for f in fullmodel_outputs_paths if f.stem.startswith(session_id)
         )
         if len(matching_outputs) > 1:
             raise AssertionError(f"Multiple files found for outputs of full model for {session_id}: something has likely gone wrong in data connections in pipeline")
-        full_model_outputs_path = matching_outputs[0] if matching_outputs else None
+        fullmodel_outputs_path = matching_outputs[0] if matching_outputs else None
         try:
             # may need two sets of params (one for model params, one for configuring how model is run, e.g. parallelized)
-            process(inputs_path=npz_path, full_model_outputs_path=full_model_outputs_path, test=args.test)
+            process(inputs_path=npz_path, fullmodel_outputs_path=fullmodel_outputs_path, test=args.test)
         except Exception as e:
             logger.exception(f'{npz_path.stem} | Failed:')
         else:
