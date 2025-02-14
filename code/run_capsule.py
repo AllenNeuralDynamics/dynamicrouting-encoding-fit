@@ -21,6 +21,7 @@ import sklearn
 import pynwb
 import upath
 import zarr
+import xarray as xr
 
 import utils
 import models
@@ -87,7 +88,7 @@ def process(inputs_path: str | pathlib.Path, fullmodel_outputs_path: str | pathl
     input_dict = np.load(inputs_path, allow_pickle=True)
     run_params = input_dict['run_params'].item()
     fit = input_dict['fit'].item()
-    design_matrix = input_dict['design_matrix'].item()
+    design_matrix = xr.Dataset(input_dict['design_matrix'].item())
 
     session_id = run_params["session_id"]
     model_params = glm_utils.RunParams(session_id = session_id)
@@ -106,8 +107,12 @@ def process(inputs_path: str | pathlib.Path, fullmodel_outputs_path: str | pathl
                 'cell_L1_ratio': fullmodel_dict['cell_L1_ratio']})
         # incorporate params
 
-    # run GLM
-    
+    # get all parameters
+    model_params.validate_params()
+    run_params = run_params | model_params.get_params()
+
+    fit = glm_utils.optimize_model(fit, design_matrix, run_params)
+    fit = glm_utils.evaluate_model(fit, design_matrix, run_params)
 
     # Save data to files in /results
     # If the same name is used across parallel runs of this capsule in a pipeline, a name clash will
