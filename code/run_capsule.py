@@ -74,7 +74,7 @@ def parse_args() -> argparse.Namespace:
 
 # processing function ---------------------------------------------- #
 # modify the body of this function, but keep the same signature
-def process(inputs_path: str | pathlib.Path, fullmodel_outputs_path: str | pathlib.Path | None = None, test: int = 0) -> None:
+def process(inputs_path: str | pathlib.Path, fullmodel_outputs_path: str | pathlib.Path | None = None, app_params: "AppParams", test: int = 0) -> None:
     """Process a single session with parameters defined in `params` and save results + params to
     /results.
     
@@ -89,12 +89,25 @@ def process(inputs_path: str | pathlib.Path, fullmodel_outputs_path: str | pathl
     fit = input_dict['fit'].item()
     design_matrix = input_dict['design_matrix'].item()
 
+    session_id = run_params["session_id"]
+    model_params = glm_utils.RunParams(session_id = session_id)
+    model_params.update_multiple_metrics(dataclasses.asdict(app_params))
     if fullmodel_outputs_path:
         logger.info(f"Re-using regularization parameters from {fullmodel_outputs_path.name}")
-        fullmodel
+        fullmodel_outputs_path = pathlib.Path(fullmodel_outputs_path)
+        fullmodel_dict =  np.load(fullmodel_outputs_path, allow_pickle=True)
+
+        model_params.update_multiple_metrics({'fullmodel_fitted': True, 
+                'cell_regularization_nested': fullmodel_dict['cell_regularization_nested'],
+                'cell_regularization': fullmodel_dict['cell_regularization'],
+                'cell_rank_nested': fullmodel_dict['cell_rank_nested'],
+                'cell_rank': fullmodel_dict['cell_rank'],
+                'cell_L1_ratio_nested': fullmodel_dict['cell_L1_ratio_nested'],
+                'cell_L1_ratio': fullmodel_dict['cell_L1_ratio']})
         # incorporate params
 
-    # run GLM...
+    # run GLM
+    
 
     # Save data to files in /results
     # If the same name is used across parallel runs of this capsule in a pipeline, a name clash will
