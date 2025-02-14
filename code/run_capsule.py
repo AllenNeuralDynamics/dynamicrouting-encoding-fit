@@ -93,6 +93,7 @@ def process(inputs_path: str | pathlib.Path, fullmodel_outputs_path: str | pathl
     session_id = run_params["session_id"]
     model_params = glm_utils.RunParams(session_id = session_id)
     model_params.update_multiple_metrics(dataclasses.asdict(app_params))
+
     if fullmodel_outputs_path:
         logger.info(f"Re-using regularization parameters from {fullmodel_outputs_path.name}")
         fullmodel_outputs_path = pathlib.Path(fullmodel_outputs_path)
@@ -144,15 +145,41 @@ def process(inputs_path: str | pathlib.Path, fullmodel_outputs_path: str | pathl
 # this is an example from Sam's processing code, replace with your own parameters as needed:
 @dataclasses.dataclass
 class Params:
-    
-    nUnitSamples: int = 20
-    unitSampleSize: int = 20
-    windowDur: float = 1
-    binSize: float = 1
-    nShuffles: int | str = 100
-    binStart: int = -windowDur
-    n_units: list = dataclasses.field(default_factory=lambda: [5, 10, 20, 40, 60, 'all'])
-    decoder_type: str | Literal['linearSVC', 'LDA', 'RandomForest', 'LogisticRegression'] = 'LogisticRegression'
+
+    method: str = 'ridge_regression',  # ['ridge_regression', 'lasso_regression', ...]
+
+    no_nested_CV: bool = False,
+    optimize_on: float = 0.3,
+    n_outer_folds: int = 5,
+    n_inner_folds: int = 5,
+    optimize_penalty_by_cell: bool = False,
+    optimize_penalty_by_area: bool = False,
+    optimize_penalty_by_firing_rate: bool = False,
+    optimize_penalty_by_best_units: bool = False, # TO DO
+    use_fixed_penalty: bool =  False,
+    num_rate_clusters: int = 5,
+
+    # RIDGE + ELASTIC NET
+    L2_grid_type: str ='log',
+    L2_grid_range: list = [1, 2**12],
+    L2_grid_num: int = 13,
+    L2_fixed_lambda: float = None,
+
+    # LASSO
+    L1_grid_type: str = 'log',
+    L1_grid_range: list = [10**-6, 10**-2],
+    L1_grid_num: int = 13,
+    L1_fixed_lambda: float = None,
+
+    # ELASTIC NET
+    L1_ratio_grid_type: str = 'log',
+    L1_ratio_grid_range: list = [10**-6, 10**-1],
+    L1_ratio_grid_num: int = 9,
+    L1_ratio_fixed: float = None,
+
+    # RRR
+    rank_grid_num: int = 10,
+    rank_fixed: float = None,
 
     @property
     def bins(self) -> npt.NDArray[np.float64]:
