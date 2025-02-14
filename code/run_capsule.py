@@ -113,18 +113,17 @@ def process(inputs_path: str | pathlib.Path, fullmodel_outputs_path: str | pathl
 
     fit = glm_utils.optimize_model(fit, design_matrix, run_params)
     fit = glm_utils.evaluate_model(fit, design_matrix, run_params)
+    fit['spike_count_arr'].pop('spike_counts', None)
 
     # Save data to files in /results
     # If the same name is used across parallel runs of this capsule in a pipeline, a name clash will
     # occur and the pipeline will fail, so use session_id as filename prefix:
     #   /results/<sessionId>.suffix
     results = {
-        'x': np.full((5,5), 1.2), 
-        'y': np.full((5,5), 1.2), 
-        'fit': np.full((5,5), 1.2),
-        'params': params,
+        'fit': fit,
+        'params': run_params,
     }
-    output_path = pathlib.Path(f"/results/outputs/{params['session_id']}_{params['model_name']}_outputs.npz")
+    output_path = pathlib.Path(f"/results/outputs/{session_id}_{run_params['model_name']}_outputs.npz")
     # /outputs/ avoids name clash due to multiple logs dirs
     output_path.parent.mkdir(parents=True, exist_ok=True)
     logger.info(f"Writing results to {output_path}")
