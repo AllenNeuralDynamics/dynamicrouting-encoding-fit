@@ -75,7 +75,7 @@ def parse_args() -> argparse.Namespace:
 
 # processing function ---------------------------------------------- #
 # modify the body of this function, but keep the same signature
-def process(app_params: "AppParams", inputs_path: str | Path, fullmodel_outputs_path: str | Path | None = None, test: int = 0) -> None:
+def process(app_params: "AppParams", inputs_path: str | Path, fullmodel_outputs_path: str | pathlib.Path | None = None, test: int = 0) -> None:
 
     """Process a single session with parameters defined in `params` and save results + params to
     /results.
