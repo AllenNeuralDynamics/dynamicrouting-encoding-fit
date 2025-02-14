@@ -236,15 +236,15 @@ def main():
         data_path = pathlib.Path('/code')
     else: 
         data_path = utils.get_data_root()
-    npz_paths = tuple(data_path.rglob('*_inputs.npz'))
-    logger.info(f"Found {len(npz_paths)} inputs .npz file(s)")
+    input_dict_paths = tuple(data_path.rglob('*_inputs.npz'))
+    logger.info(f"Found {len(input_dict_paths)} inputs .npz file(s)")
 
     fullmodel_outputs_paths = tuple(data_path.rglob('*_fullmodel_outputs.npz'))
     logger.info(f"Found {len(fullmodel_outputs_paths)} full model outputs .npz file(s)")
 
     # run processing function for each .npz file, with test mode implemented:
-    for npz_path in npz_paths:
-        session_id = '_'.join(npz_path.stem.split('_')[:2])
+    for input_dict_path in input_dict_paths:
+        session_id = '_'.join(input_dict_path.stem.split('_')[:2])
         matching_outputs = tuple(
             f for f in fullmodel_outputs_paths if f.stem.startswith(session_id)
         )
@@ -253,11 +253,11 @@ def main():
         fullmodel_outputs_path = matching_outputs[0] if matching_outputs else None
         try:
             # may need two sets of params (one for model params, one for configuring how model is run, e.g. parallelized)
-            process(inputs_path=npz_path, fullmodel_outputs_path=fullmodel_outputs_path, test=args.test)
+            process(inputs_path=input_dict_path, fullmodel_outputs_path=fullmodel_outputs_path, test=args.test)
         except Exception as e:
-            logger.exception(f'{npz_path.stem} | Failed:')
+            logger.exception(f'{input_dict_path.stem} | Failed:')
         else:
-            logger.info(f'{npz_path.stem} | Completed')
+            logger.info(f'{input_dict_path.stem} | Completed')
 
         if args.test:
             logger.info("Test mode: exiting after first session")
