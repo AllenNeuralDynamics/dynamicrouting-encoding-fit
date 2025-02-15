@@ -84,7 +84,6 @@ class RunParams:
 
     def get_params(self):
         """Retrieve the run_params dictionary."""
-        self.define_kernels()
         return self.run_params
 
     def validate_params(self):
