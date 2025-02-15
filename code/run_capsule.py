@@ -75,7 +75,7 @@ def parse_args() -> argparse.Namespace:
 
 # processing function ---------------------------------------------- #
 # modify the body of this function, but keep the same signature
-def process(app_params: "AppParams", inputs_path: str | Path, fullmodel_outputs_path: str | pathlib.Path | None = None, test: int = 0) -> None:
+def process(app_params: "AppParams", inputs_path: str | pathlib.Path, fullmodel_outputs_path: str | pathlib.Path | None = None, test: int = 0) -> None:
 
     """Process a single session with parameters defined in `params` and save results + params to
     /results.
@@ -219,17 +219,17 @@ def main():
     # if any of the parameters required for processing are passed as command line arguments, we can
     # get a new params object with these values in place of the defaults:
 
-    params = {}
-    for field in dataclasses.fields(Params):
+    app_params = {}
+    for field in dataclasses.fields(AppParams):
         if (val := getattr(args, field.name, None)) is not None:
-            params[field.name] = val
+            app_params[field.name] = val
     
     override_params = json.loads(args.override_params_json)
     if override_params:
         for k, v in override_params.items():
-            if k in params:
+            if k in app_params:
                 logger.info(f"Overriding value of {k!r} from command line arg with value specified in `override_params_json`")
-            params[k] = v
+            app_params[k] = v
             
     # if test mode is on, we process .npz files attached to the capsule in /code,
     # otherwise, process all .npz files discovered in /data
@@ -254,7 +254,7 @@ def main():
         fullmodel_outputs_path = matching_outputs[0] if matching_outputs else None
         try:
             # may need two sets of params (one for model params, one for configuring how model is run, e.g. parallelized)
-            process(inputs_path=input_dict_path, fullmodel_outputs_path=fullmodel_outputs_path, test=args.test)
+            process(inputs_path=input_dict_path, fullmodel_outputs_path=fullmodel_outputs_path, app_params = app_params, test=args.test)
         except Exception as e:
             logger.exception(f'{input_dict_path.stem} | Failed:')
         else:
