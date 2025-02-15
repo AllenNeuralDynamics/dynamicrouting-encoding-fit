@@ -90,6 +90,9 @@ def process(app_params: "AppParams", inputs_path: str | pathlib.Path, fullmodel_
     run_params = input_dict['run_params'].item()
     fit = input_dict['fit'].item()
     design_matrix_dict = input_dict['design_matrix'].item()
+
+    print(design_matrix_dict)
+    
     design_matrix = xr.Dataset({
                         "data": (["rows", "columns"], design_matrix_dict["data"]),
                         "weights": (["columns"], design_matrix_dict["weights"]),
