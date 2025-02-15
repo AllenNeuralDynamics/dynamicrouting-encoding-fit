@@ -89,7 +89,12 @@ def process(app_params: "AppParams", inputs_path: str | pathlib.Path, fullmodel_
     input_dict = np.load(inputs_path, allow_pickle=True)
     run_params = input_dict['run_params'].item()
     fit = input_dict['fit'].item()
-    design_matrix = xr.Dataset(input_dict['design_matrix'].item())
+    design_matrix_dict = input_dict['design_matrix'].item()
+    design_matrix = xr.Dataset({
+                        "data": (["rows", "columns"], design_matrix_dict["data"]),
+                        "weights": (["columns"], design_matrix_dict["weights"]),
+                        "timestamps": (["rows"], design_matrix_dict["timestamps"])
+                        })
 
     session_id = run_params["session_id"]
     model_params = glm_utils.RunParams(session_id = session_id)
