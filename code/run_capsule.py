@@ -145,7 +145,7 @@ def process(app_params: "AppParams", inputs_path: str | pathlib.Path, fullmodel_
 
 # this is an example from Sam's processing code, replace with your own parameters as needed:
 @dataclasses.dataclass
-class Params:
+class AppParams:
 
     method: str = 'ridge_regression',  # ['ridge_regression', 'lasso_regression', ...]
 
