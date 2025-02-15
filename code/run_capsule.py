@@ -91,8 +91,6 @@ def process(app_params: "AppParams", inputs_path: str | pathlib.Path, fullmodel_
     fit = input_dict['fit'].item()
     design_matrix_dict = input_dict['design_matrix'].item()
 
-    print(design_matrix_dict)
-    
     design_matrix = xr.Dataset({
                         "data": (["rows", "columns"], design_matrix_dict["data"]),
                         "weights": (["columns"], design_matrix_dict["weights"]),
@@ -101,7 +99,7 @@ def process(app_params: "AppParams", inputs_path: str | pathlib.Path, fullmodel_
 
     session_id = run_params["session_id"]
     model_params = glm_utils.RunParams(session_id = session_id)
-    model_params.update_multiple_metrics(dataclasses.asdict(app_params))
+    model_params.update_multiple_metrics(app_params)
 
     if fullmodel_outputs_path:
         logger.info(f"Re-using regularization parameters from {fullmodel_outputs_path.name}")
