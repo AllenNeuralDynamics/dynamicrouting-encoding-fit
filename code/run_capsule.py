@@ -131,7 +131,7 @@ def process(app_params: "AppParams", inputs_path: str | pathlib.Path, fullmodel_
         'fit': fit,
         'params': run_params,
     }
-    output_path = pathlib.Path(f"/results/outputs/{session_id}_{run_params['model_name']}_outputs.npz")
+    output_path = pathlib.Path(f"/results/outputs/{session_id}_{run_params['model_label']}_outputs.npz")
     # /outputs/ avoids name clash due to multiple logs dirs
     output_path.parent.mkdir(parents=True, exist_ok=True)
     logger.info(f"Writing results to {output_path}")
@@ -274,3 +274,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# To fix, if its a reduced model, it shouldnt run until it finds the fullmodel
