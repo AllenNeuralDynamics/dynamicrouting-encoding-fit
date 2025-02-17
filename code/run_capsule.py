@@ -249,10 +249,10 @@ def main():
     logger.info(f"Files in {data_path}: {os.listdir(data_path)})
 
     input_dict_paths = tuple(data_path.rglob('*_inputs.npz'))
-    logger.info(f"Found {len(input_dict_paths)} inputs .npz file(s)")
+    logger.info(f"Found {len(input_dict_paths)} inputs .npz file(s) in {data_path}")
 
     fullmodel_outputs_paths = tuple(data_path.rglob('*_fullmodel_outputs.npz'))
-    logger.info(f"Found {len(fullmodel_outputs_paths)} full model outputs .npz file(s)")
+    logger.info(f"Found {len(fullmodel_outputs_paths)} full model outputs .npz file(s) in {data_path}")
 
     # run processing function for each .npz file, with test mode implemented:
     for input_dict_path in input_dict_paths:
