@@ -246,7 +246,7 @@ def main():
         data_path = utils.get_data_root()
 
     # test logging
-    logger.info(f"Files in {data_path}: {os.listdir(data_path)})
+    logger.info(f"Files in {data_path}: {os.listdir(data_path)}")
 
     input_dict_paths = tuple(data_path.rglob('*_inputs.npz'))
     logger.info(f"Found {len(input_dict_paths)} inputs .npz file(s) in {data_path}")
