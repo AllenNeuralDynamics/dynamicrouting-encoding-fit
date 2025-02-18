@@ -241,7 +241,7 @@ def main():
     # otherwise, process all .npz files discovered in /data
 
     if args.test:
-        data_path = pathlib.Path('/code')
+        data_path = utils.get_code_root()
     else: 
         data_path = utils.get_data_root()
 

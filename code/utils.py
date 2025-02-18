@@ -461,6 +461,16 @@ def get_data_root(as_str: bool = False) -> pathlib.Path:
         raise FileNotFoundError(f"data dir not present at any of {expected_paths=}")
 
 @functools.cache
+def get_code_root(as_str: bool = False) -> pathlib.Path:
+    expected_paths = ('/code', '/tmp/code', )
+    for p in expected_paths:
+        if (code_root := pathlib.Path(p)).exists():
+            logger.debug(f"Using {code_root=}")
+        return code_root.as_posix() if as_str else code_root
+    else:
+        raise FileNotFoundError(f"code dir not present at any of {expected_paths=}")
+
+@functools.cache
 def get_nwb_paths() -> tuple[pathlib.Path, ...]:
     return tuple(get_data_root().rglob('*.nwb'))
 
