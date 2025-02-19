@@ -240,7 +240,7 @@ def main():
     # if test mode is on, we process .npz files attached to the capsule in /code,
     # otherwise, process all .npz files discovered in /data
 
-    if args.test:
+    if args.test and utils.is_pipeline(): # code folder does not exist in pipeline
         data_path = utils.get_code_root()
     else: 
         data_path = utils.get_data_root()
