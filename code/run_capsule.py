@@ -105,14 +105,14 @@ def process(app_params: "AppParams", inputs_path: str | pathlib.Path, fullmodel_
         logger.info(f"Re-using regularization parameters from {fullmodel_outputs_path.name}")
         fullmodel_outputs_path = pathlib.Path(fullmodel_outputs_path)
         fullmodel_dict =  np.load(fullmodel_outputs_path, allow_pickle=True)
-
+        fullmodel_fit = fullmodel_dict['fit'].item()
         model_params.update_multiple_metrics({'fullmodel_fitted': True, 
-                'cell_regularization_nested': fullmodel_dict['cell_regularization_nested'],
-                'cell_regularization': fullmodel_dict['cell_regularization'],
-                'cell_rank_nested': fullmodel_dict['cell_rank_nested'],
-                'cell_rank': fullmodel_dict['cell_rank'],
-                'cell_L1_ratio_nested': fullmodel_dict['cell_L1_ratio_nested'],
-                'cell_L1_ratio': fullmodel_dict['cell_L1_ratio']})
+                'cell_regularization_nested': fullmodel_fit['cell_regularization_nested'],
+                'cell_regularization': fullmodel_fit['cell_regularization'],
+                'cell_rank_nested': fullmodel_fit['cell_rank_nested'],
+                'cell_rank': fullmodel_fit['cell_rank'],
+                'cell_L1_ratio_nested': fullmodel_fit['cell_L1_ratio_nested'],
+                'cell_L1_ratio': fullmodel_fit['cell_L1_ratio']})
         # incorporate params
 
     # get all parameters
