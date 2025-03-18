@@ -67,8 +67,6 @@ class RunParams:
             "cell_rank_nested": None,
 
             "fullmodel_fitted": False,
-
-            "model_label": "fullmodel"
         }
 
     def update_metric(self, key, value):

@@ -113,6 +113,7 @@ def process(app_params: "AppParams", inputs_path: str | pathlib.Path, fullmodel_
                 'cell_rank': fullmodel_fit['cell_rank'],
                 'cell_L1_ratio_nested': fullmodel_fit['cell_L1_ratio_nested'],
                 'cell_L1_ratio': fullmodel_fit['cell_L1_ratio']})
+
         # incorporate params
 
     # get all parameters
@@ -131,6 +132,7 @@ def process(app_params: "AppParams", inputs_path: str | pathlib.Path, fullmodel_
         'fit': fit,
         'params': run_params,
     }
+
     output_path = pathlib.Path(f"/results/outputs/{session_id}_{run_params['model_label']}_outputs.npz")
     # /outputs/ avoids name clash due to multiple logs dirs
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -252,6 +254,7 @@ def main():
     logger.info(f"Found {len(fullmodel_outputs_paths)} full model outputs .npz file(s) in {data_path}")
 
     # run processing function for each .npz file, with test mode implemented:
+
     for input_dict_path in input_dict_paths:
         session_id = '_'.join(input_dict_path.stem.split('_')[:2])
         matching_outputs = tuple(
@@ -268,9 +271,9 @@ def main():
         else:
             logger.info(f'{input_dict_path.stem} | Completed')
 
-        if args.test:
-            logger.info("Test mode: exiting after first session")
-            break
+#        if args.test:
+#            logger.info("Test mode: exiting after first session")
+#            break
     utils.ensure_nonempty_results_dirs(['/results', '/results/outputs'])
     logger.info(f"Time elapsed: {time.time() - t0:.2f} s")
 
