@@ -23,7 +23,7 @@ class RunParams:
     def __init__(self, session_id):
         self.run_params = {
             "session_id": session_id,
-            "method": 'ridge_regression',  # ['ridge_regression', 'lasso_regression', ...]
+            "method": 'ridge_regression',  # ['ridge_regression', 'lasso_regression','reduced_rank_regression']
 
             "no_nested_CV": False,
             "optimize_on": 0.3,
