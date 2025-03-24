@@ -5,6 +5,7 @@ import json
 import functools
 import logging
 import pathlib
+import pickle
 import time
 import types
 import typing
@@ -86,10 +87,10 @@ def process(app_params: "AppParams", inputs_path: str | pathlib.Path, fullmodel_
     inputs_path = pathlib.Path(inputs_path)
     logger.info(f"Processing {inputs_path.name}")
     
-    input_dict = np.load(inputs_path, allow_pickle=True)
-    run_params = input_dict['run_params'].item()
-    fit = input_dict['fit'].item()
-    design_matrix_dict = input_dict['design_matrix'].item()
+    input_dict = pickle.loads(inputs_path, allow_pickle=True)
+    run_params = input_dict['run_params']
+    fit = input_dict['fit']
+    design_matrix_dict = input_dict['design_matrix']
 
     design_matrix = xr.Dataset({
                         "data": (["rows", "columns"], design_matrix_dict["data"]),
@@ -247,8 +248,8 @@ def main():
     else: 
         data_path = utils.get_data_root()
 
-    input_dict_paths = tuple(data_path.rglob('*_inputs.npz'))
-    logger.info(f"Found {len(input_dict_paths)} inputs .npz file(s) in {data_path}")
+    input_dict_paths = tuple(data_path.rglob('*_inputs.pkl'))
+    logger.info(f"Found {len(input_dict_paths)} inputs .pkl file(s) in {data_path}")
 
     fullmodel_outputs_paths = tuple(data_path.rglob('*_fullmodel_outputs.npz'))
     logger.info(f"Found {len(fullmodel_outputs_paths)} full model outputs .npz file(s) in {data_path}")
